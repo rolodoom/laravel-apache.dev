@@ -1,0 +1,57 @@
+version: "3.5"
+
+services:
+  laravel-app:
+    build:
+      context: "."
+      args:
+        uid: ${UID}
+    image: laravel-apache/dev:latest
+    container_name: laravel-app
+    environment:
+      - APACHE_RUN_USER=#${UID}
+      - APACHE_RUN_GROUP=#${UID}
+    volumes:
+      - ./src:/var/www/html
+    ports:
+      - ${APP_PORT}:80
+    networks:
+      backend:
+        aliases:
+          - laravel-app
+
+  mysql-db:
+    image: mysql:5.7
+    container_name: mysql-db
+    volumes:
+      - ./run/var:/var/lib/mysql
+    environment:
+      TZ: "${DB_TZ}"
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
+      MYSQL_DATABASE: "${DB_DATABASE}"
+      MYSQL_USER: "${DB_USERNAME}"
+      MYSQL_PASSWORD: "${DB_PASSWORD}"
+    ports:
+      - ${MYSQL_PORT}:3306
+    networks:
+      backend:
+        aliases:
+          - db
+
+  phpmyadmin:
+    depends_on:
+      - mysql-db
+    image: phpmyadmin
+    container_name: phpmyadmin
+    environment:
+      DATABASE_HOST: "mysql-db:${MYSQL_PORT}"
+    ports:
+      - ${PHPMYADMIN_PORT}:80
+    networks:
+      backend:
+        aliases:
+          - phpmyadmin
+
+networks:
+  backend:
+    name: backend-network
