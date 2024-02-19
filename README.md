@@ -67,9 +67,9 @@ APP_URL=http://localhost:<APP_PORT>
 
 DB_HOST=mysql-db
 DB_PORT=<MYSQL_PORT>
-DB_DATABASE=laravel_db
-DB_USERNAME=laravel_user
-DB_PASSWORD=<DB_PASSWORD>
+DB_DATABASE=laravel
+DB_USERNAME=dbuser
+DB_PASSWORD=secret
 ```
 
 Initialize Laravel:
@@ -106,7 +106,7 @@ Running `./container` takes you inside the `laravel-app` container under user `u
 ```bash
 #!/bin/bash
 
-docker exec -it mysql-db bash -c "mysql -u dbuser -psecret db"
+docker exec -it mysql-db bash -c "mysql -u dbuser -psecret laravel"
 ```
 
 Running `./db` will connect to your database container's daemon using mysql client.
