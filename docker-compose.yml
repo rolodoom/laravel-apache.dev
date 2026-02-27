@@ -6,7 +6,7 @@ services:
         uid: ${UID}
         TZ: ${DB_TZ}
     image: laravel-apache/dev:latest
-    container_name: laravel-app
+    container_name: ${PROJECT_NAME}-app
     volumes:
       - '$PWD/app:/var/www/html'
       - '$PWD/config/php.ini:/usr/local/etc/php/php.ini'
@@ -19,7 +19,7 @@ services:
 
   db:
     image: mysql:8.0
-    container_name: mysql-db
+    container_name: ${PROJECT_NAME}-db
     volumes:
       - '$PWD/db:/var/lib/mysql'
       - '$PWD/config/conf.d:/etc/mysql/conf.d'
@@ -36,7 +36,7 @@ services:
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin:5.2.2
-    container_name: phpmyadmin
+    container_name: ${PROJECT_NAME}-phpmyadmin
     depends_on:
       - db
     environment:
@@ -52,4 +52,4 @@ services:
 
 networks:
   backend:
-    name: backend_network
+    name: ${PROJECT_NAME}_network

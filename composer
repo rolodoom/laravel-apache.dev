@@ -1,12 +1,19 @@
 #!/bin/bash
-# script: composer
+# script: composer.sh
 # Purpose: execute a composer command inside the container
 
+# Load environment variables from the .env file
+if [ -f .env ]; then
+  export $(grep -v -E '^#|^UID=' .env | xargs)
+fi
+
+# Get the command line arguments
 args="$@"
 command="composer $args"
 echo "$command"
 
-CONTAINER=laravel-app
-USER=devuser
+# Define constants
+CONTAINER=${PROJECT_NAME}-app
 
-docker exec -it $CONTAINER bash -c "sudo -u $USER /bin/bash -c \"$command\""
+# Execute the command
+docker exec -it $CONTAINER bash -c "sudo -u devuser /bin/bash -c \"$command\""

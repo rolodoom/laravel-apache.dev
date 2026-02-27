@@ -2,7 +2,13 @@
 # script: container
 # Purpose: open a bash shell inside the container
 
-CONTAINER=laravel-app
-USER=devuser
+# Load environment variables from the .env file
+if [ -f .env ]; then
+  export $(grep -v -E '^#|^UID=' .env | xargs)
+fi
 
-docker exec -it $CONTAINER bash -c "sudo -u $USER /bin/bash"
+# Define constants
+CONTAINER=${PROJECT_NAME}-app
+
+# Execute the command
+docker exec -it $CONTAINER bash -c "sudo -u devuser /bin/bash"

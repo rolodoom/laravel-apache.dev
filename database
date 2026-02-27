@@ -2,9 +2,16 @@
 # script: database
 # Purpose: open a mysql shell inside the database container
 
-CONTAINER=mysql-db
-USER=dbuser
-PASSWORD=secret
-DATABASE=laravel
+# Load environment variables from the .env file
+if [ -f .env ]; then
+  export $(grep -v -E '^#|^UID=' .env | xargs)
+fi
 
-docker exec -it $CONTAINER bash -c "mysql -u $USER -p$PASSWORD $DATABASE"
+# Define constants
+CONTAINER=${PROJECT_NAME}-db
+DB_USER=${DB_USERNAME}
+DB_PASSWORD=${DB_PASSWORD}
+DB_DATABASE=${DB_DATABASE}
+
+# Execute the command
+docker exec -it $CONTAINER bash -c "mysql -u $DB_USER -p$DB_PASSWORD $DB_DATABASE"
