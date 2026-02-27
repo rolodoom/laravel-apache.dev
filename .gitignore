@@ -2,6 +2,9 @@
 db/
 app/
 
+# Ignore db backups
+backup/
+
 # Ignore all environment files
 *.env
 
