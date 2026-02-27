@@ -121,7 +121,32 @@ Run any `composer` command inside the `${PROJECT_NAME}-app` container, example:
 
 ### container
 
-Running `./container` takes you inside the `${PROJECT_NAME}-app` container under user `uid(1000)` (same with host user)
+The `./container` script is a helper utility to interact with the
+`${PROJECT_NAME}-app` container.
+
+When executed without arguments, it opens an interactive shell inside
+the container as user `devuser` (UID 1000), matching the host user to
+avoid permission issues.
+
+```bash
+./container
+```
+
+This gives you a Bash session inside the application container.
+
+You can also pass any command as arguments to execute it directly inside
+the container:
+
+```bash
+./container vendor/bin/pint
+./container ls -al
+```
+
+All commands are executed as `devuser` inside the `${PROJECT_NAME}-app`
+container.
+
+This ensures consistency with the containerized environment and avoids
+relying on host-installed tools.
 
 ### database
 
