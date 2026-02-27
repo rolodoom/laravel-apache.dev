@@ -14,9 +14,11 @@ Laravel + Apache + MySQL development environment with Docker and Docker Compose.
   - [Setup Laravel Project](#setup-laravel-project)
 - [phpMyAdmin](#phpmyadmin)
 - [Helper Scripts](#helper-scripts)
-  - [container](#container)
-  - [db](#db)
   - [composer](#composer)
+  - [container](#container)
+  - [database](#database)
+  - [database_backup](#database_backup)
+  - [fix-permissions](#fix-permissions)
   - [php-artisan](#php-artisan)
   - [phpunit](#phpunit)
 - [Bugs and Issues](#bugs-and-issues)
@@ -108,109 +110,49 @@ The default username is `root`, and the password is the same as supplied in the 
 
 ## Helper Scripts
 
-### fix-permissions
+### composer
+
+Run any `composer` command inside the `${PROJECT_NAME}-app` container, example:
 
 ```bash
-#!/bin/bash
-
-CONTAINER=laravel-app
-USER=devuser
-APP_PATH=/var/www/html
-
-docker exec -it $CONTAINER bash -c "chown -R $USER:www-data $APP_PATH/storage $APP_PATH/bootstrap/cache && chmod -R 775 $APP_PATH/storage $APP_PATH/bootstrap/cache"
+./composer create-project laravel/laravel .
+./composer dump-autoload
 ```
-
-Running `./fix-permissions` will fix storage and bootstrap/cache permissions inside the container.
 
 ### container
 
-```bash
-#!/bin/bash
-
-CONTAINER=laravel-app
-USER=devuser
-
-docker exec -it $CONTAINER bash -c "sudo -u $USER /bin/bash"
-```
-
-Running `./container` takes you inside the `laravel-app` container under user `uid(1000)` (same with host user)
+Running `./container` takes you inside the `${PROJECT_NAME}-app` container under user `uid(1000)` (same with host user)
 
 ### database
 
-```bash
-#!/bin/bash
+Running `./database` will connect to your `${PROJECT_NAME}-db` container's daemon using mysql client.
 
-CONTAINER=mysql-db
-USER=dbuser
-PASSWORD=secret
-DATABASE=laravel
+### database_backup
 
-docker exec -it $CONTAINER bash -c "mysql -u $USER -p$PASSWORD $DATABASE"
-```
-
-Running `./database` will connect to your database container's daemon using mysql client.
-
-### composer
+Run `./database_backup` to backup your database inside the `${PROJECT_NAME}-db` container's daemon using mysqldump client. The backup file will be stored inside the `./backup` folder as `<DB_DATABASE>_backup_YYYYMMDD_HHMMSS.sql`.
 
 ```bash
-#!/bin/bash
-
-args="$@"
-command="composer $args"
-echo "$command"
-
-CONTAINER=laravel-app
-USER=devuser
-
-docker exec -it $CONTAINER bash -c "sudo -u $USER /bin/bash -c \"$command\""
+./database_backup
 ```
 
-Run any `composer` command, example:
+### fix-permissions
 
-```bash
-$ ./composer dump-autoload
-```
+Running `./fix-permissions` will fix storage and bootstrap/cache permissions in `/var/www/html` folder inside the container.
 
 ### php-artisan
 
-```bash
-#!/bin/bash
-
-args="$@"
-command="php artisan $args"
-echo "$command"
-
-CONTAINER=laravel-app
-USER=devuser
-
-docker exec -it $CONTAINER bash -c "sudo -u $USER /bin/bash -c \"$command\""
-```
-
-Run any `php artisan` command, example:
+Running `./php-artisan` will take you inside the `${PROJECT_NAME}-app` container and run any `php artisan` command, example:
 
 ```bash
-$ ./php-artisan make:controller BlogPostController --resource
+./php-artisan make:controller BlogPostController --resource
 ```
 
 ### phpunit
 
-```bash
-#!/bin/bash
-
-args="$@"
-command="vendor/bin/phpunit $args"
-echo "$command"
-
-CONTAINER=laravel-app
-USER=devuser
-
-docker exec -it $CONTAINER bash -c "sudo -u $USER /bin/bash -c \"$command\""
-```
-
-Run `./vendor/bin/phpunit` to execute tests, example:
+Run `./vendor/bin/phpunit` to execute tests inside the `${PROJECT_NAME}-app` container, example:
 
 ```bash
-$ ./phpunit --group=failing
+./phpunit --group=failing
 ```
 
 ## Bugs and Issues
