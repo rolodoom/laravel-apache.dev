@@ -1,57 +1,55 @@
-version: "3.5"
-
 services:
-  laravel-app:
+  app:
     build:
-      context: "."
+      context: .
       args:
         uid: ${UID}
+        TZ: ${DB_TZ}
     image: laravel-apache/dev:latest
     container_name: laravel-app
-    environment:
-      - APACHE_RUN_USER=#${UID}
-      - APACHE_RUN_GROUP=#${UID}
     volumes:
-      - ./src:/var/www/html
+      - '$PWD/app:/var/www/html'
+      - '$PWD/config/php.ini:/usr/local/etc/php/php.ini'
     ports:
-      - ${APP_PORT}:80
+      - '${APP_PORT}:80'
+    environment:
+      - TZ=${DB_TZ}
     networks:
-      backend:
-        aliases:
-          - laravel-app
+      - backend
 
-  mysql-db:
-    image: mysql:5.7
+  db:
+    image: mysql:8.0
     container_name: mysql-db
     volumes:
-      - ./run/var:/var/lib/mysql
+      - '$PWD/db:/var/lib/mysql'
+      - '$PWD/config/conf.d:/etc/mysql/conf.d'
     environment:
-      TZ: "${DB_TZ}"
-      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
-      MYSQL_DATABASE: "laravel"
-      MYSQL_USER: "dbuser"
-      MYSQL_PASSWORD: "secret"
+      TZ: ${DB_TZ}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
     ports:
-      - ${MYSQL_PORT}:3306
+      - '${MYSQL_PORT}:3306'
     networks:
-      backend:
-        aliases:
-          - db
+      - backend
 
   phpmyadmin:
-    depends_on:
-      - mysql-db
-    image: phpmyadmin
+    image: phpmyadmin/phpmyadmin:5.2.2
     container_name: phpmyadmin
+    depends_on:
+      - db
     environment:
-      DATABASE_HOST: "mysql-db:${MYSQL_PORT}"
+      PMA_HOST: db
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      UPLOAD_LIMIT: 512M
+      TZ: ${DB_TZ}
     ports:
-      - ${PHPMYADMIN_PORT}:80
+      - '${PHPMYADMIN_PORT}:80'
     networks:
-      backend:
-        aliases:
-          - phpmyadmin
+      - backend
 
 networks:
   backend:
-    name: backend-network
+    name: backend_network

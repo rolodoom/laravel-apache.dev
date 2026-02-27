@@ -1,0 +1,10 @@
+#!/bin/bash
+# script: fix-permissions
+# Purpose: fix storage and bootstrap/cache permissions inside the container
+
+CONTAINER=laravel-app
+USER=devuser
+APP_PATH=/var/www/html
+
+docker exec -it $CONTAINER bash -c "chown -R $USER:www-data $APP_PATH/storage $APP_PATH/bootstrap/cache && chmod -R 775 $APP_PATH/storage $APP_PATH/bootstrap/cache"
+echo "Permissions for storage and bootstrap/cache fixed!"

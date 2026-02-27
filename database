@@ -1,0 +1,10 @@
+#!/bin/bash
+# script: database
+# Purpose: open a mysql shell inside the database container
+
+CONTAINER=mysql-db
+USER=dbuser
+PASSWORD=secret
+DATABASE=laravel
+
+docker exec -it $CONTAINER bash -c "mysql -u $USER -p$PASSWORD $DATABASE"

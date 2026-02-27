@@ -1,3 +1,8 @@
 #!/bin/bash
+# script: container
+# Purpose: open a bash shell inside the container
 
-docker exec -it laravel-app bash -c "sudo -u devuser /bin/bash"
+CONTAINER=laravel-app
+USER=devuser
+
+docker exec -it $CONTAINER bash -c "sudo -u $USER /bin/bash"

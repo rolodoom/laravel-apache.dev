@@ -25,7 +25,14 @@ Laravel + Apache + MySQL development environment with Docker and Docker Compose.
 ## Requirements
 
 - Latest versions of **Docker** and **Docker Compose** installed.
-- On Linux you need [to add your user to the docker group](https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user).
+- On Linux, you need [to add your user to the docker group](https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user).
+
+### Versions included in this template
+
+- **PHP**: 8.3-apache (via `laravel-apache/dev:latest`)
+- **MySQL**: 8.0 (via `mysql:8.0`)
+- **phpMyAdmin**: 5.2.2 (via `phpmyadmin/phpmyadmin:5.2.2`)
+- **Composer**: latest (copied into the PHP container)
 
 ## Usage
 
@@ -36,23 +43,25 @@ Clone the repo and create the folder structure for the laravel source code:
 ```bash
 git clone https://github.com/rolodoom/laravel-apache.dev.git
 cd laravel-apache.dev
-mkdir -p src run/var
+mkdir -p app db
 ```
 
-Copy `.env.example` to `.env`
+Copy `env.example` to `.env` and modify it to your needs:
 
 ```bash
-cp .env.example .env
+cp env.example .env
 ```
 
 Build the images and start the services:
 
 ```bash
-docker-compose build --no-cache
-docker-compose up -d
+docker compose build --no-cache
+docker compose up -d
 ```
 
 ### Setup Laravel Project
+
+> In this template, the `app/` folder is ignored by Git. When creating a new project, Laravel should be installed inside this folder in your local clone.
 
 Create Laravel Project:
 
@@ -65,6 +74,7 @@ Modify Laravel `src/.env` file to match your container credentials:
 ```
 APP_URL=http://localhost:<APP_PORT>
 
+DB_CONNECTION=mysql
 DB_HOST=mysql-db
 DB_PORT=<MYSQL_PORT>
 DB_DATABASE=laravel
@@ -72,10 +82,15 @@ DB_USERNAME=dbuser
 DB_PASSWORD=secret
 ```
 
+Fix permissions:
+
+```bash
+./fix-permissions
+```
+
 Initialize Laravel:
 
 ```bash
-./composer install
 ./php-artisan key:generate
 ./php-artisan migrate
 ./php-artisan config:cache
@@ -83,33 +98,57 @@ Initialize Laravel:
 
 **NOTE:** To regenrate DB use `./php-artisan migrate:fresh --seed`
 
+The project can be accessed at http://localhost:<APP_PORT>
+
 ## phpMyAdmin
 
-You can also visit http://localhost:8088 to access phpMyAdmin after starting the containers.
+You can also visit http://localhost:<PHPMYADMIN_PORT> to access phpMyAdmin after starting the containers.
 
 The default username is `root`, and the password is the same as supplied in the `.env` file.
 
 ## Helper Scripts
+
+### fix-permissions
+
+```bash
+#!/bin/bash
+
+CONTAINER=laravel-app
+USER=devuser
+APP_PATH=/var/www/html
+
+docker exec -it $CONTAINER bash -c "chown -R $USER:www-data $APP_PATH/storage $APP_PATH/bootstrap/cache && chmod -R 775 $APP_PATH/storage $APP_PATH/bootstrap/cache"
+```
+
+Running `./fix-permissions` will fix storage and bootstrap/cache permissions inside the container.
 
 ### container
 
 ```bash
 #!/bin/bash
 
-docker exec -it laravel-app bash -c "sudo -u devuser /bin/bash"
+CONTAINER=laravel-app
+USER=devuser
+
+docker exec -it $CONTAINER bash -c "sudo -u $USER /bin/bash"
 ```
 
 Running `./container` takes you inside the `laravel-app` container under user `uid(1000)` (same with host user)
 
-### db
+### database
 
 ```bash
 #!/bin/bash
 
-docker exec -it mysql-db bash -c "mysql -u dbuser -psecret laravel"
+CONTAINER=mysql-db
+USER=dbuser
+PASSWORD=secret
+DATABASE=laravel
+
+docker exec -it $CONTAINER bash -c "mysql -u $USER -p$PASSWORD $DATABASE"
 ```
 
-Running `./db` will connect to your database container's daemon using mysql client.
+Running `./database` will connect to your database container's daemon using mysql client.
 
 ### composer
 
@@ -119,7 +158,11 @@ Running `./db` will connect to your database container's daemon using mysql clie
 args="$@"
 command="composer $args"
 echo "$command"
-docker exec -it laravel-app bash -c "sudo -u devuser /bin/bash -c \"$command\""
+
+CONTAINER=laravel-app
+USER=devuser
+
+docker exec -it $CONTAINER bash -c "sudo -u $USER /bin/bash -c \"$command\""
 ```
 
 Run any `composer` command, example:
@@ -136,7 +179,11 @@ $ ./composer dump-autoload
 args="$@"
 command="php artisan $args"
 echo "$command"
-docker exec -it laravel-app bash -c "sudo -u devuser /bin/bash -c \"$command\""
+
+CONTAINER=laravel-app
+USER=devuser
+
+docker exec -it $CONTAINER bash -c "sudo -u $USER /bin/bash -c \"$command\""
 ```
 
 Run any `php artisan` command, example:
@@ -153,7 +200,11 @@ $ ./php-artisan make:controller BlogPostController --resource
 args="$@"
 command="vendor/bin/phpunit $args"
 echo "$command"
-docker exec -it laravel-app bash -c "sudo -u devuser /bin/bash -c \"$command\""
+
+CONTAINER=laravel-app
+USER=devuser
+
+docker exec -it $CONTAINER bash -c "sudo -u $USER /bin/bash -c \"$command\""
 ```
 
 Run `./vendor/bin/phpunit` to execute tests, example:

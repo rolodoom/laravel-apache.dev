@@ -1,4 +1,16 @@
-src/
-run/
+# Ignore database and the Laravel project folders for new projects  
+db/
+app/
 
-.env
+# Ignore all environment files
+*.env
+
+# Ignore system files
+.DS_Store
+Thumbs.db
+*.swp
+
+# Ignore IDE/editor configs
+.idea/
+.vscode/
+*.iml
